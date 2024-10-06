@@ -1,4 +1,4 @@
-Copyright ©️ 2023 by Oneo64
+Copyright ©️ 2024 by Oneo64
 
 Darkast Survival updated version
 
