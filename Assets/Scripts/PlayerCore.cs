@@ -17,7 +17,8 @@ public class PlayerCore : NetworkBehaviour
 	[SyncVar(hook="UpdateScore")] public int score;
 
 	Volume bloodEffect;
-	int maxHealth = 100;
+	public int maxHealth = 100;
+	public int punchDamage = 10;
 	int health = 100;
 
 	float shootWait;
@@ -33,6 +34,7 @@ public class PlayerCore : NetworkBehaviour
 	float invincibilityTime = 0;
 
 	[HideInInspector] public Perk perk;
+	[SyncVar] public Difficulty difficulty;
 
 	void Start() {
 		Cursor.lockState = CursorLockMode.Locked;
@@ -46,6 +48,7 @@ public class PlayerCore : NetworkBehaviour
 
 		perk = canvas.Find("Perks").GetComponent<Perks>().perk;
 		canvas.Find("Perks").gameObject.SetActive(false);
+		canvas.Find("Difficulty").gameObject.SetActive(false);
 
 		switch (perk) {
 			case Perk.Athlete:
@@ -80,6 +83,8 @@ public class PlayerCore : NetworkBehaviour
 		}
 
 		health = maxHealth;
+
+		if (isServer) difficulty = canvas.Find("Difficulty").GetComponent<Difficulties>().difficulty;
 	}
 
 	void Update() {
@@ -206,11 +211,15 @@ public class PlayerCore : NetworkBehaviour
 					if (PlayerControls.GetInput("throw")) {
 						animator.CrossFade("Throw", 0.2f);
 					}
+				} else if (PlayerControls.GetInput("use")) {
+					StartCoroutine(Punch());
 				} else {
 					animator.SetBool("Aiming", false);
 					if (!canvas.Find("Dot").gameObject.activeInHierarchy) canvas.Find("Dot").gameObject.SetActive(true);
 				}
 			} else {
+				if (PlayerControls.GetInput("use")) StartCoroutine(Punch());
+
 				animator.SetBool("Aiming", false);
 				if (!canvas.Find("Dot").gameObject.activeInHierarchy) canvas.Find("Dot").gameObject.SetActive(true);
 			}
@@ -225,6 +234,25 @@ public class PlayerCore : NetworkBehaviour
 			} else {
 				bloodEffect.weight = 0;
 			}
+		}
+	}
+
+	public IEnumerator Punch() {
+		if (shootWait < Time.time) {
+			animator.CrossFade("Punch", 0.1f);
+
+			RpcPlaySound("Punch");
+
+			yield return new WaitForSeconds(0.25f);
+
+			if (Physics.Raycast(camera.transform.position, camera.transform.forward, out RaycastHit hit, 1.5f, LayerMask.GetMask(new string[] {"Default", "Player"}))) {
+				if (hit.transform.GetComponentInParent<Enemy>()) hit.transform.GetComponentInParent<Enemy>().CmdDamage(punchDamage, camera.transform.forward * 100, this, "", Vector3.zero);
+				if (hit.transform.GetComponentInParent<PlayerCore>()) hit.transform.GetComponentInParent<PlayerCore>().RpcDamage(punchDamage, camera.transform.forward * 100, "", Vector3.zero);
+			
+				RpcPlaySound("PunchHit");
+			}
+
+			shootWait = Time.time + 0.5f;
 		}
 	}
 
@@ -299,7 +327,7 @@ public class PlayerCore : NetworkBehaviour
 	public void Damage(int damage, Vector3 force, string hit, Vector3 hitPos) {
 		if (health <= 0 || invincibilityTime > 0) return;
 		
-		health -= damage;
+		health -= difficulty == Difficulty.ReallyEasy ? Mathf.FloorToInt(damage / 2f) : damage;
 
 		if (health <= 0) {
 			canvas.Find("Dead").gameObject.SetActive(true);

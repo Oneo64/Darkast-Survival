@@ -108,7 +108,7 @@ public class Mannequin : Enemy
 		}
 	}
 
-	public void Hit() {
+	public void Hit(string hitName) {
 		alert = Time.time + 20f;
 		stalking = false;
 	}

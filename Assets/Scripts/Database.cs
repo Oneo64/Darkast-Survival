@@ -347,3 +347,9 @@ public enum Perk {
 	Monkey,
 	Survivior
 }
+
+public enum Difficulty {
+	ReallyEasy,
+	Easy,
+	Normal
+}

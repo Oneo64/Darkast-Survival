@@ -40,6 +40,8 @@ public class Enemy : NetworkBehaviour
 	[HideInInspector] public float walkWait;
 	[HideInInspector] public float attackWait;
 	[HideInInspector] public float specialWait;
+
+	Vector3 lastSeen;
 	
 	float doorWait;
 	float forgetWait;
@@ -49,6 +51,8 @@ public class Enemy : NetworkBehaviour
 	bool canSee;
 
 	[HideInInspector] public Transform target;
+
+	Difficulty difficulty = Difficulty.Normal;
 
 	void Start() {
 		agent = GetComponent<NavMeshAgent>();
@@ -65,6 +69,19 @@ public class Enemy : NetworkBehaviour
 					minion.GetComponent<Enemy>().isLeader = false;
 
 					NetworkServer.Spawn(minion);
+				}
+			}
+		}
+
+		if (isServer) {
+			difficulty = GameObject.Find("/Canvas").transform.Find("Difficulty").GetComponent<Difficulties>().difficulty;
+
+			if (difficulty == Difficulty.ReallyEasy || difficulty == Difficulty.Easy) {
+				agent.speed *= 0.75f;
+
+				if (this is BallMonster) {
+					((BallMonster) this).normalRoll = Mathf.CeilToInt(((BallMonster) this).normalRoll * 0.75f);
+					((BallMonster) this).fastRoll = Mathf.CeilToInt(((BallMonster) this).fastRoll * 0.75f);
 				}
 			}
 		}
@@ -105,7 +122,9 @@ public class Enemy : NetworkBehaviour
 						SendMessage("Attack");
 					}
 
-					forgetWait = Time.time + 10;
+					lastSeen = target.position;
+
+					forgetWait = Time.time + Random.Range(10, 21);
 				}
 
 				if (seeWait < Time.time) {
@@ -117,7 +136,7 @@ public class Enemy : NetworkBehaviour
 				}
 			}
 
-			if (listenWait < Time.time && target == null) {
+			if (listenWait < Time.time && target == null && difficulty == Difficulty.Normal) {
 				AudioSource audio = LookForAudios();
 
 				if (audio != null) {
@@ -136,6 +155,9 @@ public class Enemy : NetworkBehaviour
 					SetAgentDestination(follow.GetComponent<Enemy>().target.position + GetRandomPosition(1f, 2f));
 				} else if (follow != null && Random.Range(1, 5) != 1) {
 					SetAgentDestination(follow.position + GetRandomPosition(2f, 4f));
+				} else if (target == null && forgetWait > Time.time) {
+					SetAgentDestination(lastSeen + GetRandomPosition(1f, 8f));
+					walkWait = Time.time + Random.Range(5f, 10f);
 				} else {
 					SendMessage("Movement", SendMessageOptions.DontRequireReceiver);
 				}
@@ -179,12 +201,12 @@ public class Enemy : NetworkBehaviour
 				float dist2 = Vector3.Distance(transform.position, targ.position);
 
 				if (player.sneaking) {
-					if (dist2 > detectionRange / 2f || Vector3.Dot(transform.forward, (targ.position - transform.position).normalized) < 0) {
+					if (dist2 > detectionRange / 2f || Vector3.Dot(transform.forward, (targ.position - transform.position).normalized) < 0.5f) {
 						continue;
 					}
 				}
 
-				if (dist2 < dist) {
+				if (dist2 < dist && Vector3.Dot(transform.forward, (targ.position - transform.position).normalized) > 0) {
 					newTarget = targ;
 					dist = dist2;
 				}
@@ -197,8 +219,6 @@ public class Enemy : NetworkBehaviour
 			if (specialAbilityTrigger == SpecialAbilityTriggerType.OnAggro) SendMessage("SpecialAbility", SendMessageOptions.DontRequireReceiver);
 		}
 
-		if (newTarget == null && forgetWait > Time.time) return;
-
 		target = newTarget;
 	}
 
@@ -209,10 +229,9 @@ public class Enemy : NetworkBehaviour
 
 		foreach (AudioSource audio in audios) {
 			float dist = Vector3.Distance(audio.transform.position, transform.position);
+			bool canBeHeard = (dist < audio.maxDistance / audioDetectionImpairment) || (dist < audio.maxDistance && audio.maxDistance < 5);
 
-			if (audio.isPlaying && audio.spatialBlend > 0.2f && dist < audio.maxDistance / audioDetectionImpairment && !audio.transform.parent.GetComponent<Enemy>()) {
-				if (audio.maxDistance < 20 && Physics.Linecast(transform.position + (Vector3.up * 1.5f), audio.transform.position, LayerMask.GetMask("Default"))) continue;
-
+			if (audio.isPlaying && audio.spatialBlend > 0.2f && canBeHeard && !audio.transform.parent.GetComponent<Enemy>()) {
 				if (dist < lastDist) {
 					newAudio = audio;
 					lastDist = dist;
@@ -251,7 +270,7 @@ public class Enemy : NetworkBehaviour
 
 			SendMessage("Die", new DeathParameters(force, hitName, hitPos), SendMessageOptions.DontRequireReceiver);
 		} else {
-			SendMessage("Hit", SendMessageOptions.DontRequireReceiver);
+			SendMessage("Hit", hitName, SendMessageOptions.DontRequireReceiver);
 
 			if (specialAbilityTrigger == SpecialAbilityTriggerType.OnDamaged && specialAbilityInterval < Time.time) {
 				specialWait = Time.time + specialAbilityInterval;

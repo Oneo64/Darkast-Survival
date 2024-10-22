@@ -243,6 +243,24 @@ public class PlayerInventory : NetworkBehaviour
 			Gun gun = (Gun) selectedItem.GetData();
 
 			core.animator.CrossFade(gun.model[1], 0.2f, 1);
+
+			switch (gun.model[1]) {
+				case "Hold":
+					core.animator.SetInteger("ToolType", 1);
+					break;
+
+				case "HoldPistol":
+					core.animator.SetInteger("ToolType", 2);
+					break;
+
+				case "HoldRifle":
+					core.animator.SetInteger("ToolType", 3);
+					break;
+
+				default:
+					core.animator.SetInteger("ToolType", 0);
+					break;
+			}
 			
 			CmdUpdateToolModel(gun.model[0]);
 			UpdateToolModel(gun.model[0]);

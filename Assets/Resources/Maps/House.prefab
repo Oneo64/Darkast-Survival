@@ -1626,6 +1626,7 @@ GameObject:
   - component: {fileID: 8607566052844075943}
   - component: {fileID: 4058462027312034836}
   - component: {fileID: 3329686404386818596}
+  - component: {fileID: 9118709123074447958}
   m_Layer: 0
   m_Name: House
   m_TagString: Untagged
@@ -1751,6 +1752,26 @@ MonoBehaviour:
   generateLoot: 0
   recursive: 0
   generatedLootChance: 10
+--- !u!114 &9118709123074447958
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8607566052844075940}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4831c2cff428ff4b8f6403f6dca0a3d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  syncDirection: 0
+  syncMode: 0
+  syncInterval: 0
+  enemies:
+  - {fileID: 1830738162083405173, guid: 24c5679425540f14eb336b66772e6448, type: 3}
+  target: {fileID: 321924129523240773}
+  maxEnemies: 1
+  spawnInterval: 10
 --- !u!1 &8607566053241794545
 GameObject:
   m_ObjectHideFlags: 0
