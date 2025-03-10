@@ -9,6 +9,7 @@ using Mirror;
 
 public class PlayerCore : NetworkBehaviour
 {
+	[SyncVar] public string playerName;
 	public Camera camera;
 	public Transform neck;
 	public Transform tool;
@@ -36,53 +37,72 @@ public class PlayerCore : NetworkBehaviour
 	[HideInInspector] public Perk perk;
 	[SyncVar] public Difficulty difficulty;
 
+	[Command]
+	public void CmdSetName(string n) {
+		playerName = n;
+		RpcUpdateName();
+	}
+
+	[ClientRpc]
+	public void RpcUpdateName() {
+		transform.Find("PlayerName").GetComponent<TMPro.TextMeshPro>().text = playerName;
+	}
+
 	void Start() {
-		Cursor.lockState = CursorLockMode.Locked;
-		bloodEffect = GameObject.Find("BloodVolume").GetComponent<Volume>();
+		if (isLocalPlayer) {
+			Cursor.lockState = CursorLockMode.Locked;
+			bloodEffect = GameObject.Find("BloodVolume").GetComponent<Volume>();
 
-		canvas = GameObject.Find("/Canvas").transform;
-		animator = GetComponent<Animator>();
-		inventory = GetComponent<PlayerInventory>();
+			canvas = GameObject.Find("/Canvas").transform;
+			animator = GetComponent<Animator>();
+			inventory = GetComponent<PlayerInventory>();
 
-		Application.targetFrameRate = 70;
+			Application.targetFrameRate = 70;
 
-		perk = canvas.Find("Perks").GetComponent<Perks>().perk;
-		canvas.Find("Perks").gameObject.SetActive(false);
-		canvas.Find("Difficulty").gameObject.SetActive(false);
+			perk = canvas.Find("Perks").GetComponent<Perks>().perk;
+			canvas.Find("PlayerName").gameObject.SetActive(false);
+			canvas.Find("Perks").gameObject.SetActive(false);
+			canvas.Find("Difficulty").gameObject.SetActive(false);
 
-		switch (perk) {
-			case Perk.Athlete:
-				maxHealth = 150;
-				break;
+			switch (perk) {
+				case Perk.Athlete:
+					maxHealth = 150;
+					break;
 
-			case Perk.Engineer:
-				inventory.AddItem("wood", 5);
-				inventory.AddItem("metal", 5);
-				inventory.AddItem("spring", 5);
-				inventory.AddItem("battery", 1);
-				break;
+				case Perk.Engineer:
+					inventory.AddItem("wood", 5);
+					inventory.AddItem("metal", 5);
+					inventory.AddItem("spring", 5);
+					inventory.AddItem("battery", 1);
+					break;
 
-			case Perk.ExplosionGuy:
-				inventory.AddItem("grenade", 1);
-				inventory.AddItem("paper", 5);
-				inventory.AddItem("metal", 8);
-				inventory.AddItem("gunpowder", 8);
-				break;
+				case Perk.ExplosionGuy:
+					inventory.AddItem("grenade", 1);
+					inventory.AddItem("paper", 5);
+					inventory.AddItem("metal", 8);
+					inventory.AddItem("gunpowder", 8);
+					break;
 
-			case Perk.Monkey:
-				maxHealth = 10;
-				inventory.AddItem("canned_soup", 1);
-				inventory.AddItem("rope", 1);
-				break;
+				case Perk.Monkey:
+					maxHealth = 10;
+					inventory.AddItem("canned_soup", 1);
+					inventory.AddItem("rope", 1);
+					break;
 
-			case Perk.Survivior:
-				inventory.AddItem("flare", 2);
-				inventory.AddItem("colt_navy", 1);
-				inventory.AddItem(".38_rimfire_box", 2);
-				break;
+				case Perk.Survivior:
+					inventory.AddItem("flare", 2);
+					inventory.AddItem("colt_navy", 1);
+					inventory.AddItem(".38_rimfire_box", 2);
+					break;
+			}
+
+			health = maxHealth;
+
+			CmdSetName(canvas.Find("PlayerName").Find("Input").GetComponent<InputField>().text);
+			transform.Find("PlayerName").GetComponent<TMPro.TextMeshPro>().enabled = false;
+		} else {
+			transform.Find("PlayerName").GetComponent<TMPro.TextMeshPro>().text = playerName;
 		}
-
-		health = maxHealth;
 
 		if (isServer) difficulty = canvas.Find("Difficulty").GetComponent<Difficulties>().difficulty;
 	}
@@ -99,19 +119,24 @@ public class PlayerCore : NetworkBehaviour
 						canvas.Find("Interact").GetComponent<Text>().text = "E to take " + Database.items[hit.transform.GetComponent<PlacedItem>().item].name;
 					} else if (hit.transform.GetComponent<DroppedItem>()) {
 						canvas.Find("Interact").GetComponent<Text>().text = "E to take " + Database.items[hit.transform.GetComponent<DroppedItem>().item.id].name;
+					} else if (hit.transform.GetComponent<Door2>()) {
+						canvas.Find("Interact").GetComponent<Text>().text = "E to try to open this door";
 					} else {
 						canvas.Find("Interact").GetComponent<Text>().text = "E to interact";
 					}
 
 					if (PlayerControls.GetInput("interact")) {
-						if (hit.transform.tag == "Interactable") {
+						if (hit.transform.tag == "Interactable" && !hit.transform.GetComponent<Door2>()) {
 							hit.transform.SendMessage("Interact", SendMessageOptions.DontRequireReceiver);
+						} else if (hit.transform.GetComponent<Door2>()) {
+							if (hit.transform.GetComponent<Door2>().canOpen) CmdLoadRandomMap();
 						} else {
 							if (hit.transform.GetComponent<PlacedItem>()) {
 								if (inventory.HasSpaceFor(hit.transform.GetComponent<PlacedItem>().item)) {
 									inventory.AddItem(hit.transform.GetComponent<PlacedItem>().item);
 
-									hit.transform.GetComponent<PlacedItem>().CmdDestroy();
+									hit.transform.GetComponent<PlacedItem>().CmdDestroy(transform);
+									hit.transform.GetComponent<Collider>().enabled = false;
 
 									PlayLocalSound("Take");
 
@@ -121,7 +146,8 @@ public class PlayerCore : NetworkBehaviour
 								if (inventory.HasSpaceFor(hit.transform.GetComponent<DroppedItem>().item.id)) {
 									inventory.AddItem(hit.transform.GetComponent<DroppedItem>().item);
 
-									hit.transform.GetComponent<DroppedItem>().CmdDestroy();
+									hit.transform.GetComponent<DroppedItem>().CmdDestroy(transform);
+									hit.transform.GetComponent<Collider>().enabled = false;
 
 									PlayLocalSound("Take");
 
@@ -234,6 +260,8 @@ public class PlayerCore : NetworkBehaviour
 			} else {
 				bloodEffect.weight = 0;
 			}
+		} else {
+			transform.Find("PlayerName").LookAt(Camera.main.transform);
 		}
 	}
 
@@ -241,18 +269,25 @@ public class PlayerCore : NetworkBehaviour
 		if (shootWait < Time.time) {
 			animator.CrossFade("Punch", 0.1f);
 
-			RpcPlaySound("Punch");
+			CmdPlaySound("Punch");
 
 			yield return new WaitForSeconds(0.25f);
 
 			if (Physics.Raycast(camera.transform.position, camera.transform.forward, out RaycastHit hit, 1.5f, LayerMask.GetMask(new string[] {"Default", "Player"}))) {
-				if (hit.transform.GetComponentInParent<Enemy>()) hit.transform.GetComponentInParent<Enemy>().CmdDamage(punchDamage, camera.transform.forward * 100, this, "", Vector3.zero);
-				if (hit.transform.GetComponentInParent<PlayerCore>()) hit.transform.GetComponentInParent<PlayerCore>().RpcDamage(punchDamage, camera.transform.forward * 100, "", Vector3.zero);
-			
-				RpcPlaySound("PunchHit");
+				CmdPunch(hit.transform);
+
+				CmdPlaySound("PunchHit");
 			}
 
 			shootWait = Time.time + 0.5f;
+		}
+	}
+
+	[Command]
+	public void CmdPunch(Transform t) {
+		if (t != null) {
+			if (t.GetComponentInParent<Enemy>()) t.GetComponentInParent<Enemy>().CmdDamage(punchDamage, camera.transform.forward * 100, this, "", Vector3.zero);
+			if (t.GetComponentInParent<PlayerCore>()) t.GetComponentInParent<PlayerCore>().RpcDamage(punchDamage, camera.transform.forward * 100, "", Vector3.zero);
 		}
 	}
 
@@ -488,6 +523,11 @@ public class PlayerCore : NetworkBehaviour
 	[ClientRpc]
 	private void RpcPlaySound(string name) {
 		transform.Find(name).GetComponent<AudioSource>().Play();
+	}
+
+	[Command]
+	private void CmdLoadRandomMap() {
+		GameObject.Find("/Map").GetComponent<MapLoader>().LoadRandomMap();
 	}
 
 	public void PlayLocalSound(string n) {

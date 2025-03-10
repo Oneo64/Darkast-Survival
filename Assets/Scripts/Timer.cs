@@ -15,7 +15,7 @@ public class Timer : NetworkBehaviour
 	public string[] maps;
 	string lastMap;
 
-	[SyncVar(hook="UpdateTimer")] int minutes = 2;
+	[SyncVar(hook="UpdateTimer")] int minutes = 20;
 	[SyncVar(hook="UpdateTimer")] int seconds;
 
 	IEnumerator Start() {
@@ -43,7 +43,7 @@ public class Timer : NetworkBehaviour
 						lastMap = map;
 						loader.LoadMap(map);
 
-						minutes = 4;
+						minutes = 19;
 					}
 				}
 			}

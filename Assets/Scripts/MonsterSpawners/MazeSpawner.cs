@@ -48,7 +48,7 @@ public class MazeSpawner : NetworkBehaviour
 				}
 
 				if (canSpawn) {
-					if (Random.Range(1, 5) == 1) {
+					if (Random.Range(1, 11) == 1) {
 						NetworkServer.Spawn(Instantiate(rareEnemies[Random.Range(0, rareEnemies.Length)] as GameObject, tile.position, Quaternion.identity));
 					} else {
 						NetworkServer.Spawn(Instantiate(commonEnemies[Random.Range(0, commonEnemies.Length)] as GameObject, tile.position, Quaternion.identity));

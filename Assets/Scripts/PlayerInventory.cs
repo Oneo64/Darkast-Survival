@@ -268,6 +268,7 @@ public class PlayerInventory : NetworkBehaviour
 			Tool t = (Tool) selectedItem.GetData();
 
 			core.animator.CrossFade("Hold", 0.2f, 1);
+			core.animator.SetInteger("ToolType", 1);
 			
 			CmdUpdateToolModel(t.model);
 			UpdateToolModel(t.model);
@@ -275,6 +276,7 @@ public class PlayerInventory : NetworkBehaviour
 			Food t = (Food) selectedItem.GetData();
 
 			core.animator.CrossFade("Hold", 0.2f, 1);
+			core.animator.SetInteger("ToolType", 1);
 			
 			CmdUpdateToolModel(t.model);
 			UpdateToolModel(t.model);
@@ -282,11 +284,13 @@ public class PlayerInventory : NetworkBehaviour
 			Throwable t = (Throwable) selectedItem.GetData();
 
 			core.animator.CrossFade("Hold", 0.2f, 1);
+			core.animator.SetInteger("ToolType", 1);
 			
 			CmdUpdateToolModel(t.model);
 			UpdateToolModel(t.model);
 		} else {
 			core.animator.CrossFade("Empty", 0.2f, 1);
+			core.animator.SetInteger("ToolType", 0);
 			
 			CmdUpdateToolModel("");
 			UpdateToolModel("");

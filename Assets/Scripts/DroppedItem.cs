@@ -18,8 +18,28 @@ public class DroppedItem : NetworkBehaviour
 		if (!isServer) GetComponent<Rigidbody>().isKinematic = true;
 	}
 
-	[Command(requiresAuthority = false)]
 	public void CmdDestroy() {
+		CmdDestroy(null);
+	}
+
+	[Command(requiresAuthority = false)]
+	public void CmdDestroy(Transform follow) {
+		GetComponent<Rigidbody>().isKinematic = true;
+		GetComponent<Collider>().enabled = false;
+
+		if (follow != null) StartCoroutine(FollowThenDestroy(follow)); else Destroy(gameObject);
+	}
+
+	public IEnumerator FollowThenDestroy(Transform follow) {
+		Vector3 start = transform.position;
+
+		for (int i = 0; i < 5; i++) {
+			yield return new WaitForSeconds(0.02f);
+			transform.position = Vector3.Lerp(start, follow.position + (Vector3.up * 1.3f), i / 5f);
+		}
+
+		yield return new WaitForSeconds(0.02f);
+
 		Destroy(gameObject);
 	}
 

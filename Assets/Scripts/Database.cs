@@ -85,6 +85,7 @@ public class Database : Object
 		)},
 
 		{"flashlight", new Tool("Flashlight", "flashlight", 0.1f, false)},
+		{"hammer", new Tool("Hammer", "hammer", 0.3f, false)},
 
 		{"pistol_magazine", new Tool("Pistol Magazine", "magazine", 0.2f)},
 		{"submachine_magazine", new Tool("Submachine Magazine", "magazine", 0.2f)},
@@ -120,6 +121,7 @@ public class Database : Object
 		{"grenade", new Dictionary<string, int>() {{"gunpowder", 6}, {"metal", 4}, {"string", 1}}},
 		{"flare", new Dictionary<string, int>() {{"paper", 4}, {"plastic", 2}, {"rope", 2}, {"gunpowder", 1}, {"string", 1}}},
 		{"flashlight", new Dictionary<string, int>() {{"plastic", 3}, {"metal", 3}, {"battery", 1}}},
+		{"hammer", new Dictionary<string, int>() {{"wood", 5}, {"rope", 4}}},
 		{"dynamite", new Dictionary<string, int>() {{"paper", 10}, {"gunpowder", 15}, {"string", 10}}},
 		{".38_rimfire_box", new Dictionary<string, int>() {{"paper", 2}, {"gunpowder", 3}, {"metal", 6}}},
 		{"12_guage_box", new Dictionary<string, int>() {{"plastic", 2}, {"gunpowder", 3}, {"metal", 5}}},

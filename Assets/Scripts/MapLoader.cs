@@ -9,7 +9,23 @@ using Mirror;
 public class MapLoader : MonoBehaviour
 {
 	public NavMeshSurface[] surfaces;
+	public string[] maps;
+
+	string lastMap;
+
+	public void LoadRandomMap() {
+		string map = "";
+
+		while (map == "" || map == lastMap) {
+			map = maps[Random.Range(0, maps.Length)];
+		}
+
+		lastMap = map;
+		LoadMap(map);
+	}
+
 	public void LoadMap(string n) {
+		lastMap = n;
 		StartCoroutine(_LoadMap(n));
 	}
 

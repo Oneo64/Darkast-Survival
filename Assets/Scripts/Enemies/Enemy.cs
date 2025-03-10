@@ -195,20 +195,22 @@ public class Enemy : NetworkBehaviour
 		}
 
 		foreach (PlayerCore player in players) {
-			Transform targ = player.transform;
+			if (player != null && player.transform != null) {
+				Transform targ = player.transform;
 
-			if (!Physics.Linecast(transform.position + (Vector3.up * 1.5f), targ.position + (Vector3.up * 1.5f), LayerMask.GetMask("Default")) || esp) {
-				float dist2 = Vector3.Distance(transform.position, targ.position);
+				if (!Physics.Linecast(transform.position + (Vector3.up * 1.5f), targ.position + (Vector3.up * 1.5f), LayerMask.GetMask("Default")) || esp) {
+					float dist2 = Vector3.Distance(transform.position, targ.position);
 
-				if (player.sneaking) {
-					if (dist2 > detectionRange / 2f || Vector3.Dot(transform.forward, (targ.position - transform.position).normalized) < 0.5f) {
-						continue;
+					if (player.sneaking) {
+						if (dist2 > detectionRange / 2f || Vector3.Dot(transform.forward, (targ.position - transform.position).normalized) < 0.5f) {
+							continue;
+						}
 					}
-				}
 
-				if (dist2 < dist && Vector3.Dot(transform.forward, (targ.position - transform.position).normalized) > 0) {
-					newTarget = targ;
-					dist = dist2;
+					if (dist2 < dist && Vector3.Dot(transform.forward, (targ.position - transform.position).normalized) > 0) {
+						newTarget = targ;
+						dist = dist2;
+					}
 				}
 			}
 		}

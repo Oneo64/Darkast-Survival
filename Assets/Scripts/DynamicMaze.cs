@@ -3,15 +3,18 @@ using System.Collections.Generic;
 using UnityEngine;
 
 using Mirror;
+using System.Linq;
 
 public class DynamicMaze : NetworkBehaviour
 {
 	public int size = 10;
 	public int maxSize = 100;
+	public int minimumTiles = 20;
 	public bool moveForwards = true;
 	public Object[] tiles;
 	public Object[] rareTiles;
 	public int rareTilesRarity = 20;
+	public int tileRepetitionChance = 100;
 	public List<Transform> spawnedTiles;
 	public List<Transform> queuedTiles;
 
@@ -30,6 +33,8 @@ public class DynamicMaze : NetworkBehaviour
 
 						if (Random.Range(1, rareTilesRarity + 1) == 1 && rareTiles.Length > 0) {
 							tileToSpawn = rareTiles[Random.Range(0, rareTiles.Length)] as GameObject;
+						} else if (Random.Range(1, tileRepetitionChance + 1) == 1 && Resources.Load("Maps/Tiles/" + queuedTile.name) && !rareTiles.Contains(Resources.Load("Maps/Tiles/" + queuedTile.name))) {
+							tileToSpawn = Resources.Load("Maps/Tiles/" + queuedTile.name) as GameObject;
 						} else {
 							tileToSpawn = tiles[Random.Range(0, tiles.Length)] as GameObject;
 						}
@@ -51,11 +56,15 @@ public class DynamicMaze : NetworkBehaviour
 							spawnedTiles.Add(spawnedTile.transform);
 							newQueue.Add(spawnedTile.transform);
 							NetworkServer.Spawn(spawnedTile);
+
+							spawnedTile.name = tileToSpawn.name;
 						}
 					}
 				}
 
 				queuedTiles = newQueue;
+
+				if (spawnedTiles.Count < minimumTiles && i == size - 1) i -= 1;
 			}
 		}
 	}

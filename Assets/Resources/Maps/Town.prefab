@@ -1826,7 +1826,7 @@ MonoBehaviour:
   commonEnemies:
   - {fileID: 1830738162083405173, guid: 24c5679425540f14eb336b66772e6448, type: 3}
   - {fileID: 1830738162083405173, guid: 80d1fe2efed97bf438dbcc72e32ecb1a, type: 3}
-  maxEnemies: 30
+  maxEnemies: 50
   maxSpawnRange: 90
   spawnRange: 30
   spawnInterval: 5

@@ -1639,9 +1639,10 @@ MonoBehaviour:
   syncMode: 0
   syncInterval: 0
   tileSize: 10
-  size: 20
+  size: 30
   maxSize: 100
-  tileRarity: 2
+  tileRarity: 3
+  rareTilesAreActuallyCommon: 1
   tiles:
   - {fileID: 5499286754390877134, guid: 9d43bfc852077d64988279f52f8bfde1, type: 3}
   - {fileID: 5499286754390877134, guid: 6560f090f300de246b728c621bb84daf, type: 3}
@@ -1655,6 +1656,8 @@ MonoBehaviour:
   - {fileID: 5499286754390877134, guid: 3458fb305f5cc314785493833da63012, type: 3}
   - {fileID: 5499286754390877134, guid: 8b964ba7c994c8745be72f290974b0aa, type: 3}
   - {fileID: 5499286754390877134, guid: 379c17ca654c6704d84001f3f46aeb36, type: 3}
+  - {fileID: 5499286754390877134, guid: 0ec11182682256a44bc53b6b2d5d848c, type: 3}
+  - {fileID: 5499286754390877134, guid: e65045bfccd4dce44b25a2ffaff23de6, type: 3}
   spawnedTiles: []
   randomRot: 0
 --- !u!114 &9147831561718054786

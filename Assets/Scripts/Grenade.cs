@@ -54,6 +54,7 @@ public class Grenade : NetworkBehaviour
 				if (!a) dmg /= 2;
 
 				if (c.transform.name == "Armature") dmg *= 10;
+				if (c.transform.GetComponent<Building>()) dmg = Mathf.RoundToInt(dmg * c.transform.GetComponent<Building>().blastVulnerability);
 
 				if (a || Vector3.Distance(transform.position, c.transform.position) < explosionRadiusMin) {
 					if (c.transform.GetComponentInParent<Enemy>()) c.transform.GetComponentInParent<Enemy>().CmdDamage(dmg, forceDir * newForce, owner.GetComponent<PlayerCore>(), "", Vector3.zero);

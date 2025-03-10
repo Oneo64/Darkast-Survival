@@ -136,10 +136,13 @@ public class StaticProjectile : MonoBehaviour
 
 							if (c.transform.GetComponentInParent<Grenade>() && Random.Range(1, 5) == 1) hit.transform.GetComponentInParent<Grenade>().Check();
 						}
+
+						if (c.transform.GetComponentInParent<Building>()) c.transform.GetComponentInParent<Building>().CmdDamage(dmg);
 					}
 				} else {
 					if (targ.GetComponentInParent<Enemy>()) targ.GetComponentInParent<Enemy>().CmdDamage(dmg, transform.forward * newForce, owner.GetComponent<PlayerCore>(), hit.transform.name, hit.point);
 					if (targ.GetComponentInParent<PlayerCore>()) targ.GetComponentInParent<PlayerCore>().RpcDamage(dmg, transform.forward * newForce, hit.transform.name, hit.point);
+					if (targ.GetComponentInParent<Building>()) targ.GetComponentInParent<Building>().CmdDamage(dmg);
 
 					if (targ.GetComponentInParent<Grenade>() && Random.Range(1, 5) == 1) targ.GetComponentInParent<Grenade>().Check();
 				}

@@ -10,6 +10,7 @@ public class Maze : NetworkBehaviour
 	public int size = 10;
 	public int maxSize = 100;
 	public int tileRarity = 20;
+	public bool rareTilesAreActuallyCommon = false;
 	public Object[] tiles;
 	public Object[] rareTiles;
 	public List<Transform> spawnedTiles;
@@ -45,7 +46,7 @@ public class Maze : NetworkBehaviour
 							rot.z = Random.Range(0, 4) * 90;
 						}
 
-						if (Random.Range(1, tileRarity + 1) == 1 && rareTiles.Length > 0) {
+						if (((!rareTilesAreActuallyCommon && Random.Range(1, tileRarity + 1) == 1) || (rareTilesAreActuallyCommon && Random.Range(1, tileRarity + 1) != 1)) && rareTiles.Length > 0) {
 							spawnedTile = Instantiate(rareTiles[Random.Range(0, rareTiles.Length)] as GameObject, pos, Quaternion.Euler(rot), transform.parent);
 						} else {
 							spawnedTile = Instantiate(tiles[Random.Range(0, tiles.Length)] as GameObject, pos, Quaternion.Euler(rot), transform.parent);
