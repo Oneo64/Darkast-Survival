@@ -15,8 +15,9 @@ public class Infector : Enemy
 
 		yield return new WaitForSeconds(0.4f);
 
-		if (target != null && Vector3.Distance(transform.position, target.position) <= reach) {
-			target.GetComponent<PlayerCore>().RpcDamage(Random.Range(minDamage, maxDamage + 1), transform.forward * 3);
+		if (target != null && Vector3.Distance(transform.position, target.position) <= reach && Vector3.Dot(transform.forward, (target.position - transform.position).normalized) > 0.7f) {
+			if (target.GetComponent<PlayerCore>()) target.GetComponent<PlayerCore>().RpcDamage(Random.Range(minDamage, maxDamage + 1), transform.forward * 10);
+			if (target.GetComponent<Building>()) target.GetComponent<Building>().CmdDamage(Random.Range(minDamage, maxDamage + 1), transform.forward * 10);
 		}
 	}
 

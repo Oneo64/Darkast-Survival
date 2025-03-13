@@ -79,6 +79,15 @@ public class MapLoader : MonoBehaviour
 
 		yield return new WaitForSeconds(1);
 
+		GameObject[] doorSpawns = GameObject.FindGameObjectsWithTag("DoorCanSpawn");
+
+		if (doorSpawns.Length > 0) {
+			GameObject.Find("/MysteriousDoor").transform.position = doorSpawns[Random.Range(0, doorSpawns.Length)].transform.position + new Vector3(Random.Range(-4f, 4f), 0, Random.Range(-4f, 4f));
+			GameObject.Find("/MysteriousDoor").transform.rotation = Quaternion.Euler(0, Random.Range(0, 360), 0);
+		}
+
+		yield return new WaitForSeconds(1);
+
 		foreach (NavMeshSurface surface in surfaces) {
 			surface.UpdateNavMesh(surface.navMeshData);
 		}

@@ -23,6 +23,8 @@ public class IconMaker : MonoBehaviour
 				modelName = ((Food) kvp.Value).model;
 			} else if (kvp.Value is Throwable) {
 				modelName = ((Throwable) kvp.Value).model;
+			} else if (kvp.Value is BuildingData) {
+				modelName = ((BuildingData) kvp.Value).model;
 			}
 
 			if (Resources.Load("ItemModels/" + modelName)) {

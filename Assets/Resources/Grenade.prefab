@@ -5281,7 +5281,7 @@ MonoBehaviour:
   minDamage: 10
   explosionRadiusMin: 4
   explosionRadiusMax: 40
-  force: 30000
+  force: 20000
   destroyTime: 4
   owner: {fileID: 0}
 --- !u!114 &3743565200354582060

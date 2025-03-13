@@ -300,7 +300,7 @@ GameObject:
   - component: {fileID: 6975767805242538750}
   m_Layer: 0
   m_Name: TileBranch2
-  m_TagString: Untagged
+  m_TagString: DoorCanSpawn
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 2147483647
@@ -357,7 +357,7 @@ MonoBehaviour:
   syncDirection: 0
   syncMode: 0
   syncInterval: 0
-  target: {fileID: 5499286754390877121, guid: 8df7703763aeb6148a8cd68163b4ebf6, type: 3}
+  target: {fileID: 8883890079640851185}
   clientAuthority: 0
   syncPosition: 1
   syncRotation: 1

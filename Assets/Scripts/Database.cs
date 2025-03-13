@@ -113,6 +113,8 @@ public class Database : Object
 
 		{"canned_soup", new Food("Canned Soup", "soup", 10, 1f)},
 		{"canned_tuna", new Food("Canned Tuna", "tuna", 15, 1f)},
+
+		{"wooden_barricade", new BuildingData("Wooden Barricade", "wooden_barricade", "BarricadeWooden", 2f)},
 	};
 
 	public static Dictionary<string, Dictionary<string, int>> crafting = new Dictionary<string, Dictionary<string, int>>() {
@@ -154,7 +156,7 @@ public class Database : Object
 			if (specialHitName != "") {
 				l.Add(new Limb(t.transform.name, t.transform.localPosition, t.transform.localEulerAngles, t.name == specialHitName ? force : Vector3.zero, specialHitPos));
 			} else {
-				l.Add(new Limb(t.transform.name, t.transform.localPosition, t.transform.localEulerAngles, t.name == "Hip" ? force : Vector3.zero, Vector3.zero));
+				l.Add(new Limb(t.transform.name, t.transform.localPosition, t.transform.localEulerAngles, t.name == "Hip" ? force : Vector3.zero, specialHitPos));
 			}
 		}
 
@@ -206,6 +208,28 @@ public struct Food : IItem {
 		model = m;
 
 		heal = h;
+
+		canStack = true;
+		amount = 1;
+
+		weight = w;
+	}
+}
+
+public struct BuildingData : IItem {
+	public string name { get; set; }
+	public bool canStack { get; set; }
+	public int amount { get; set; }
+	public float weight { get; set; }
+
+	public string model;
+	public string assetName;
+
+	public BuildingData(string n, string m, string a, float w) {
+		name = n;
+		model = m;
+
+		assetName = a;
 
 		canStack = true;
 		amount = 1;

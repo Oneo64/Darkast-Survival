@@ -272,6 +272,14 @@ public class PlayerInventory : NetworkBehaviour
 			
 			CmdUpdateToolModel(t.model);
 			UpdateToolModel(t.model);
+		} else if (selectedItem.id != "" && selectedItem.GetData() is BuildingData) {
+			BuildingData t = (BuildingData) selectedItem.GetData();
+
+			core.animator.CrossFade("Hold", 0.2f, 1);
+			core.animator.SetInteger("ToolType", 1);
+			
+			CmdUpdateToolModel(t.model);
+			UpdateToolModel(t.model);
 		} else if (selectedItem.id != "" && selectedItem.GetData() is Food) {
 			Food t = (Food) selectedItem.GetData();
 

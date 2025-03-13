@@ -183,7 +183,7 @@ MonoBehaviour:
   minDamage: 20
   explosionRadiusMin: 0
   explosionRadiusMax: 0
-  force: 2000
+  force: 500
   trailChance: 1
   destroyTime: 0.1
   destroyTimeAfterSpawn: 2

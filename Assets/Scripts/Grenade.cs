@@ -57,13 +57,14 @@ public class Grenade : NetworkBehaviour
 				if (c.transform.GetComponent<Building>()) dmg = Mathf.RoundToInt(dmg * c.transform.GetComponent<Building>().blastVulnerability);
 
 				if (a || Vector3.Distance(transform.position, c.transform.position) < explosionRadiusMin) {
-					if (c.transform.GetComponentInParent<Enemy>()) c.transform.GetComponentInParent<Enemy>().CmdDamage(dmg, forceDir * newForce, owner.GetComponent<PlayerCore>(), "", Vector3.zero);
-					if (c.transform.GetComponentInParent<PlayerCore>()) c.transform.GetComponentInParent<PlayerCore>().RpcDamage(dmg, forceDir * newForce, "", Vector3.zero);
+					if (c.transform.GetComponentInParent<Enemy>()) c.transform.GetComponentInParent<Enemy>().CmdDamage(dmg, forceDir * force, owner.GetComponent<PlayerCore>(), "", Vector3.zero);
+					if (c.transform.GetComponentInParent<PlayerCore>()) c.transform.GetComponentInParent<PlayerCore>().RpcDamage(dmg, forceDir * force, "", Vector3.zero);
+					if (c.transform.GetComponentInParent<Building>()) c.transform.GetComponentInParent<Building>().CmdDamage(dmg, forceDir * force);
 
 					if (c.transform.GetComponentInParent<HasBlood>()) Blood(c.transform.position, forceDir, forceDir);
 
 					if (c.transform.GetComponent<Rigidbody>() && c.transform.name == "LowerSpine") {
-						c.transform.GetComponent<Rigidbody>().AddForceAtPosition(forceDir * newForce, transform.position);
+						c.transform.GetComponent<Rigidbody>().AddForceAtPosition(forceDir * force, transform.position);
 					}
 
 					// Big kaboom

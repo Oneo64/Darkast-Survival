@@ -171,12 +171,14 @@ MonoBehaviour:
   syncMode: 0
   syncInterval: 0
   detectionRange: 50
+  audioDetectionImpairment: 3
   health: 1000
   score: 100
   reach: 2
   isDead: 0
   attackInterval: 4
   specialAbilityInterval: 2
+  specialAbilityTrigger: 0
   moveInterval: 0.5
   ragdollname: InfectorRagdoll
   follow: {fileID: 0}
@@ -185,6 +187,7 @@ MonoBehaviour:
   minionId: darkast
   minionCount: 10
   minionAttackDistance: 30
+  wanderDistance: 20
   slowReaction: 0
   agent: {fileID: 0}
   animator: {fileID: 0}
@@ -212,7 +215,9 @@ MonoBehaviour:
   - {fileID: 8300000, guid: a368f36c26b8ffb4bba4095217bd1343, type: 3}
   - {fileID: 8300000, guid: 12c86f3a4541bf44aafb211fceb581a7, type: 3}
   - {fileID: 8300000, guid: f3d73f5a59538e340bb0e44724965025, type: 3}
+  hurtSounds: []
   sound: {fileID: 8766517089471540183}
+  hurtSound: {fileID: 0}
   interval: 10
 --- !u!136 &1830738162083405172
 CapsuleCollider:

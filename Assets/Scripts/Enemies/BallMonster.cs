@@ -35,6 +35,7 @@ public class BallMonster : Enemy
 				if (agent.velocity.magnitude < 0.5f && Vector3.Dot((target.position - transform.position).normalized, body.forward) > 0.2f) attack.Play();
 			} else {
 				target.GetComponent<PlayerCore>().RpcDamage(Random.Range(minDamage, maxDamage + 1), transform.forward * (agent.speed * 500));
+				target.GetComponent<Building>().CmdDamage(Random.Range(minDamage, maxDamage + 1), transform.forward * (agent.speed * 500));
 			}
 		}
 	}

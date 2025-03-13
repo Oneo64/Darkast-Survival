@@ -332,7 +332,7 @@ MonoBehaviour:
   syncMode: 0
   syncInterval: 0
   detectionRange: 50
-  audioDetectionImpairment: 2
+  audioDetectionImpairment: 1
   health: 200
   score: 30
   reach: 1

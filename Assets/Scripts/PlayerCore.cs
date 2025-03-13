@@ -25,6 +25,7 @@ public class PlayerCore : NetworkBehaviour
 	float shootWait;
 
 	Transform canvas;
+	Transform buildPreview;
 
 	PlayerInventory inventory;
 
@@ -34,8 +35,13 @@ public class PlayerCore : NetworkBehaviour
 
 	float invincibilityTime = 0;
 
+	string selectedToBuild = "BarricadeWooden";
+	bool buildValid = false;
+
 	[HideInInspector] public Perk perk;
 	[SyncVar] public Difficulty difficulty;
+	public Material buildValidMat;
+	public Material buildInvalidMat;
 
 	[Command]
 	public void CmdSetName(string n) {
@@ -50,6 +56,9 @@ public class PlayerCore : NetworkBehaviour
 
 	void Start() {
 		if (isLocalPlayer) {
+			buildPreview = GameObject.Find("/BuildPreview").transform;
+			buildPreview.gameObject.SetActive(false);
+
 			Cursor.lockState = CursorLockMode.Locked;
 			bloodEffect = GameObject.Find("BloodVolume").GetComponent<Volume>();
 
@@ -111,7 +120,7 @@ public class PlayerCore : NetworkBehaviour
 		if (isLocalPlayer) {
 			if (invincibilityTime > 0) invincibilityTime -= Time.deltaTime;
 
-			if (Physics.Raycast(camera.transform.position, camera.transform.forward, out RaycastHit hit, 2.5f, LayerMask.GetMask(new string[] {"Default", "Item"}))) {
+			if (Physics.Raycast(camera.transform.position, camera.transform.forward, out RaycastHit hit, 2.5f, LayerMask.GetMask(new string[] {"Default", "Item", "Building"}))) {
 				if (hit.transform.tag == "Interactable" || hit.transform.tag == "Item") {
 					canvas.Find("Interact").gameObject.SetActive(true);
 
@@ -160,11 +169,40 @@ public class PlayerCore : NetworkBehaviour
 						}
 					}
 				} else {
+					if (inventory.selectedItem.id != "" && inventory.selectedItem.GetData() is BuildingData) {
+						if (hit.transform.gameObject.layer == 0) {
+							buildPreview.position = hit.point;
+							buildPreview.eulerAngles = Vector3.up * transform.eulerAngles.y;
+
+							buildValid = Vector3.Dot(hit.normal, Vector3.up) > 0.7f;
+						} else {
+							buildValid = false;
+						}
+					}
+
 					canvas.Find("Interact").gameObject.SetActive(false);
 				}
 			} else {
+				if (inventory.selectedItem.id != "" && inventory.selectedItem.GetData() is BuildingData) {
+					if (!Physics.Raycast(camera.transform.position, camera.transform.forward, out RaycastHit hit2, 2.5f, LayerMask.GetMask(new string[] {"Default", "Building"}))) {
+						if (Physics.Raycast(camera.transform.position + (camera.transform.forward * 2.5f), Vector3.down, out hit2, 2.5f, LayerMask.GetMask(new string[] {"Default", "Building"}))) {
+							buildPreview.position = hit2.point;
+							buildPreview.eulerAngles = Vector3.up * transform.eulerAngles.y;
+
+							buildValid = Vector3.Dot(hit2.normal, Vector3.up) > 0.7f;
+						} else {
+							buildValid = false;
+						}
+					} else {
+						buildValid = false;
+					}
+				}
+
 				canvas.Find("Interact").gameObject.SetActive(false);
 			}
+
+			buildPreview.gameObject.SetActive(inventory.selectedItem.id != "" && inventory.selectedItem.GetData() is BuildingData);
+			buildPreview.GetComponent<MeshRenderer>().material = buildValid ? buildValidMat : buildInvalidMat;
 
 			if (inventory.selectedItem.id != "" && !inventory.crafting) {
 				if (PlayerControls.GetInput("drop")) {
@@ -197,6 +235,22 @@ public class PlayerCore : NetworkBehaviour
 					inventory.CheckAnimations();
 
 					CmdPlaySound("Eat");
+				} else if (PlayerControls.GetInput("use") && inventory.selectedItem.GetData() is BuildingData) {
+					if (buildValid) {
+						Item item = inventory.inventory[inventory.selected];
+						item.amount -= 1;
+
+						CmdBuild(((BuildingData) item.GetData()).assetName, GameObject.Find("/BuildPreview").transform.position, GameObject.Find("/BuildPreview").transform.forward);
+
+						if (item.amount <= 0) inventory.inventory[inventory.selected].id = "";
+
+						animator.CrossFade("Build", 0.2f);
+
+						inventory.UpdateInventory();
+						inventory.CheckAnimations();
+
+						CmdPlaySound("Build");
+					}
 				} else if (inventory.selectedItem.GetData() is Gun) {
 					Gun gun = (Gun) inventory.selectedItem.GetData();
 					bool fire = PlayerControls.GetInput("use") || (PlayerControls.GetInput("use_automatic") && gun.isAutomatic);
@@ -273,7 +327,7 @@ public class PlayerCore : NetworkBehaviour
 
 			yield return new WaitForSeconds(0.25f);
 
-			if (Physics.Raycast(camera.transform.position, camera.transform.forward, out RaycastHit hit, 1.5f, LayerMask.GetMask(new string[] {"Default", "Player"}))) {
+			if (Physics.Raycast(camera.transform.position, camera.transform.forward, out RaycastHit hit, 1.5f, LayerMask.GetMask(new string[] {"Default", "Player", "Building"}))) {
 				CmdPunch(hit.transform);
 
 				CmdPlaySound("PunchHit");
@@ -401,23 +455,35 @@ public class PlayerCore : NetworkBehaviour
 		if (ragdoll.Find("Armature") != null) {
 			ragdoll.Find("Armature").gameObject.SetActive(false);
 
+			// pose
 			foreach (Transform t in ragdoll.Find("Armature").GetComponentsInChildren<Transform>()) {
 				foreach (Limb limb in limbs) {
 					if (t.transform.name == limb.name) {
 						t.transform.localPosition = limb.position;
 						t.transform.localEulerAngles = limb.rotation;
-
-						print(limb.name + " " + limb.force.magnitude);
-
-						if (t.GetComponent<Rigidbody>() != null && limb.force.magnitude > 0.1f) {
-							if (limb.forcePos != Vector3.zero) t.GetComponent<Rigidbody>().AddForceAtPosition(limb.force, limb.forcePos); else t.GetComponent<Rigidbody>().AddForce(limb.force);
-						}
 					}
 				}
 			}
 
 			ragdoll.Find("Armature").gameObject.SetActive(true);
 			//ragdoll.Find("Armature").GetChild(0).GetComponent<Rigidbody>().AddForce(force);
+
+			// force
+			foreach (Transform t in ragdoll.Find("Armature").GetComponentsInChildren<Transform>()) {
+				foreach (Limb limb in limbs) {
+					if (t.transform.name == limb.name) {
+						print(limb.name + " " + limb.force.magnitude);
+
+						if (t.GetComponent<Rigidbody>() != null && limb.force.magnitude > 0.1f) {
+							if (limb.forcePos != Vector3.zero) {
+								t.GetComponent<Rigidbody>().AddForceAtPosition(limb.force, limb.forcePos);
+							} else {
+								t.GetComponent<Rigidbody>().AddForce(limb.force);
+							}
+						}
+					}
+				}
+			}
 		}
 
 		if (ragdoll.transform.Find("Humanoid") != null) {
@@ -481,6 +547,13 @@ public class PlayerCore : NetworkBehaviour
 
 		if (obj2.GetComponent<Grenade>()) obj2.GetComponent<Grenade>().owner = transform;
 		if (obj2.GetComponent<DroppedItem>()) obj2.GetComponent<DroppedItem>().owner = transform;
+
+		NetworkServer.Spawn(obj2);
+	}
+
+	[Command]
+	private void CmdBuild(string obj, Vector3 pos, Vector3 dir) {
+		GameObject obj2 = Instantiate(Resources.Load("Buildings/" + obj) as GameObject, pos, Quaternion.LookRotation(dir));
 
 		NetworkServer.Spawn(obj2);
 	}

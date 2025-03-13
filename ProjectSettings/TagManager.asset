@@ -12,6 +12,7 @@ TagManager:
   - Ragdoll
   - Spawner
   - Door2
+  - DoorCanSpawn
   layers:
   - Default
   - TransparentFX
@@ -22,7 +23,7 @@ TagManager:
   - Player
   - Item
   - PlayerBody
-  - 
+  - Building
   - 
   - 
   - 

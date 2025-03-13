@@ -86,7 +86,7 @@ public class StaticProjectile : MonoBehaviour
 	}
 
 	private bool Check(Vector3 pos1, Vector3 pos2) {
-		if (Physics.Linecast(pos1, pos2, out RaycastHit hit, LayerMask.GetMask(new string[] {"Default", "PlayerBody"}))) {
+		if (Physics.Linecast(pos1, pos2, out RaycastHit hit, LayerMask.GetMask(new string[] {"Default", "PlayerBody", "Building"}))) {
 			Transform targ = hit.transform.root;
 
 			if (targ == owner) return false;
@@ -110,14 +110,14 @@ public class StaticProjectile : MonoBehaviour
 					Collider[] colliders = Physics.OverlapSphere(hit.point, explosionRadiusMax);
 
 					foreach (Collider c in colliders) {
+						Vector3 forceDir = (c.transform.position - hit.point).normalized;
+
+						dmg = Random.Range(minDamage, maxDamage + 1);
+
+						dmg2 = dmg / 100f;
+						newForce = (int) Mathf.Round(force * (dmg2 * dmg2));
+
 						if (c.name.Contains("LowerSpine")) {
-							dmg = Random.Range(minDamage, maxDamage + 1);
-
-							dmg2 = dmg / 100f;
-							newForce = (int) Mathf.Round(force * (dmg2 * dmg2));
-
-							Vector3 forceDir = (c.transform.position - hit.point).normalized;
-
 							if (c.transform.GetComponentInParent<Enemy>()) {
 								c.transform.GetComponentInParent<Enemy>().CmdDamage(dmg, forceDir * newForce, owner.GetComponent<PlayerCore>(), "", Vector3.zero);
 								
@@ -137,12 +137,12 @@ public class StaticProjectile : MonoBehaviour
 							if (c.transform.GetComponentInParent<Grenade>() && Random.Range(1, 5) == 1) hit.transform.GetComponentInParent<Grenade>().Check();
 						}
 
-						if (c.transform.GetComponentInParent<Building>()) c.transform.GetComponentInParent<Building>().CmdDamage(dmg);
+						if (c.transform.GetComponentInParent<Building>()) c.transform.GetComponentInParent<Building>().CmdDamage(dmg, forceDir * newForce);
 					}
 				} else {
 					if (targ.GetComponentInParent<Enemy>()) targ.GetComponentInParent<Enemy>().CmdDamage(dmg, transform.forward * newForce, owner.GetComponent<PlayerCore>(), hit.transform.name, hit.point);
 					if (targ.GetComponentInParent<PlayerCore>()) targ.GetComponentInParent<PlayerCore>().RpcDamage(dmg, transform.forward * newForce, hit.transform.name, hit.point);
-					if (targ.GetComponentInParent<Building>()) targ.GetComponentInParent<Building>().CmdDamage(dmg);
+					if (targ.GetComponentInParent<Building>()) targ.GetComponentInParent<Building>().CmdDamage(dmg, transform.forward * newForce);
 
 					if (targ.GetComponentInParent<Grenade>() && Random.Range(1, 5) == 1) targ.GetComponentInParent<Grenade>().Check();
 				}
@@ -161,7 +161,7 @@ public class StaticProjectile : MonoBehaviour
 			if (GetComponent<MeshRenderer>()) GetComponent<MeshRenderer>().enabled = false;
 
 			bool canPenetrate2 = penetration > 0 && canPenetrate;
-			bool isThin = Physics.Raycast(hit.point + (transform.forward * 0.5f), -transform.forward, out RaycastHit hit2, 0.5f, LayerMask.GetMask("Default"));
+			bool isThin = Physics.Raycast(hit.point + (transform.forward * 0.5f), -transform.forward, out RaycastHit hit2, 0.5f, LayerMask.GetMask(new string[] {"Default", "Building"}));
 
 			if (canPenetrate2 && isThin) {
 				Vector3 rand = new Vector3(Random.Range(-0.05f, 0.05f), Random.Range(-0.05f, 0.05f), Random.Range(-0.05f, 0.05f));
@@ -208,7 +208,7 @@ public class StaticProjectile : MonoBehaviour
 		int amount = Random.Range(1, 3);
 
 		for (int i = 0; i < amount; i++) {
-			if (Physics.Raycast(pos, dir + new Vector3(Random.Range(-0.3f, 0.3f), Random.Range(-0.3f, 0.3f), Random.Range(-0.3f, 0.3f)), out RaycastHit hit, 5, LayerMask.GetMask("Default"))) {
+			if (Physics.Raycast(pos, dir + new Vector3(Random.Range(-0.3f, 0.3f), Random.Range(-0.3f, 0.3f), Random.Range(-0.3f, 0.3f)), out RaycastHit hit, 5, LayerMask.GetMask(new string[] {"Default", "Building"}))) {
 				Transform bloodParent = null;
 
 				if (hit.transform.parent && hit.transform.parent.tag == "Door") bloodParent = hit.transform;

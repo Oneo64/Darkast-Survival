@@ -46,6 +46,7 @@ public class Enemy : NetworkBehaviour
 	float doorWait;
 	float forgetWait;
 	float listenWait;
+	float listenValue; // if higher than 1 then will react to sound
 	float seeWait;
 
 	bool canSee;
@@ -140,13 +141,22 @@ public class Enemy : NetworkBehaviour
 				AudioSource audio = LookForAudios();
 
 				if (audio != null) {
-					SetAgentDestination(audio.transform.position + GetRandomPosition(1f, 5f));
+					listenValue += (200 - Mathf.Min(Vector3.Distance(transform.position, audio.transform.position), 195)) / 150f;
+
+					print(listenValue);
+
+					if (listenValue >= 1) {
+						SetAgentDestination(audio.transform.position + GetRandomPosition(1f, 20f));
+						print("hear");
+					}
 
 					walkWait = Time.time + (Vector3.Distance(transform.position, audio.transform.position) / agent.speed) + Random.Range(10, 21);
 				}
 
 				listenWait = Time.time + Random.Range(1f, 2f);
 			}
+
+			listenValue = Mathf.Max(listenValue - (Time.deltaTime * 0.1f), 0);
 
 			if (walkWait < Time.time && moveInterval > 0) {
 				walkWait = Time.time + Random.Range(moveInterval, moveInterval * 2);
@@ -183,6 +193,7 @@ public class Enemy : NetworkBehaviour
 	}
 
 	List<PlayerCore> players = new List<PlayerCore>();
+	List<Building> buildings = new List<Building>();
 	float playerGetWait = 0;
 
 	public void LookForEnemies(bool esp = false) {
@@ -191,6 +202,7 @@ public class Enemy : NetworkBehaviour
 
 		if (playerGetWait < Time.time) {
 			players = new List<PlayerCore>(Object.FindObjectsOfType<PlayerCore>());
+			buildings = new List<Building>(Object.FindObjectsOfType<Building>());
 			playerGetWait = Time.time + Random.Range(4f, 6f);
 		}
 
@@ -208,6 +220,23 @@ public class Enemy : NetworkBehaviour
 					}
 
 					if (dist2 < dist && Vector3.Dot(transform.forward, (targ.position - transform.position).normalized) > 0) {
+						newTarget = targ;
+						dist = dist2;
+					}
+				}
+			}
+		}
+
+		foreach (Building building in buildings) {
+			if (building != null && building.transform != null) {
+				Transform targ = building.transform;
+
+				bool b = Physics.Linecast(transform.position + (Vector3.up * 1.5f), targ.position + (Vector3.up * 1.5f), out RaycastHit hit, LayerMask.GetMask("Default"));
+
+				if (!b || esp) {
+					float dist2 = Vector3.Distance(transform.position, targ.position);
+
+					if (dist2 < dist && dist < 10 && (Vector3.Dot(transform.forward, (targ.position - transform.position).normalized) > 0 || dist < 2)) {
 						newTarget = targ;
 						dist = dist2;
 					}
@@ -233,7 +262,7 @@ public class Enemy : NetworkBehaviour
 			float dist = Vector3.Distance(audio.transform.position, transform.position);
 			bool canBeHeard = (dist < audio.maxDistance / audioDetectionImpairment) || (dist < audio.maxDistance && audio.maxDistance < 5);
 
-			if (audio.isPlaying && audio.spatialBlend > 0.2f && canBeHeard && !audio.transform.parent.GetComponent<Enemy>()) {
+			if (audio.isPlaying && audio.spatialBlend > 0.2f && canBeHeard && audio.transform.parent && !audio.transform.parent.GetComponent<Enemy>()) {
 				if (dist < lastDist) {
 					newAudio = audio;
 					lastDist = dist;
