@@ -117,7 +117,7 @@ public class StaticProjectile : MonoBehaviour
 						dmg2 = dmg / 100f;
 						newForce = (int) Mathf.Round(force * (dmg2 * dmg2));
 
-						if (c.name.Contains("LowerSpine")) {
+						if (c.name.Contains("Hip")) {
 							if (c.transform.GetComponentInParent<Enemy>()) {
 								c.transform.GetComponentInParent<Enemy>().CmdDamage(dmg, forceDir * newForce, owner.GetComponent<PlayerCore>(), "", Vector3.zero);
 								

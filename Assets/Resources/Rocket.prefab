@@ -140,7 +140,7 @@ GameObject:
   - component: {fileID: 598243558309640191}
   - component: {fileID: 5220378003211099383}
   m_Layer: 0
-  m_Name: Bolt
+  m_Name: Rocket
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -174,19 +174,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 88fb0d23d1d32124ab5d24a905c0c392, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  speed: 400
+  speed: 300
   drop: 0
   canRicochet: 0
   canPenetrate: 0
-  maxDamage: 40
-  minDamage: 20
-  explosionRadiusMin: 1
-  explosionRadiusMax: 2
-  force: 2000
+  maxDamage: 70
+  minDamage: 50
+  explosionRadiusMin: 5
+  explosionRadiusMax: 20
+  force: 30000
   trailChance: 1
   destroyTime: 0.1
   destroyTimeAfterSpawn: 2
-  hitName: BoltHit
+  hitName: BoltHit 1
   hitSounds:
   - {fileID: 8300000, guid: a60e23ea7f8832c4baf4afd448aaf41b, type: 3}
   owner: {fileID: 0}

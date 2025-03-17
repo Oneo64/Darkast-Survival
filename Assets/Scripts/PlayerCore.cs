@@ -600,6 +600,7 @@ public class PlayerCore : NetworkBehaviour
 
 	[Command]
 	private void CmdLoadRandomMap() {
+		score += 200;
 		GameObject.Find("/Map").GetComponent<MapLoader>().LoadRandomMap();
 	}
 

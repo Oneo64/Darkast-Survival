@@ -85,6 +85,15 @@ public class Enemy : NetworkBehaviour
 					((BallMonster) this).fastRoll = Mathf.CeilToInt(((BallMonster) this).fastRoll * 0.75f);
 				}
 			}
+
+			if (difficulty == Difficulty.Insanity) {
+				agent.speed *= 10;
+
+				if (this is BallMonster) {
+					((BallMonster) this).normalRoll = Mathf.CeilToInt(((BallMonster) this).normalRoll * 10);
+					((BallMonster) this).fastRoll = Mathf.CeilToInt(((BallMonster) this).fastRoll * 10);
+				}
+			}
 		}
 
 		SendMessage("Initialize", SendMessageOptions.DontRequireReceiver);

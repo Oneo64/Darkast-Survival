@@ -84,6 +84,13 @@ public class Database : Object
 			0.1f, 0.5f, 5f
 		)},
 
+		{"death_shotgun", new Gun(
+			"Death Shotgun", "rocket",
+			new string[] {"mossberg500", "HoldRifle", "metal"},
+			1000, true, 18, 20, 250,
+			0.02f, 1, 3.2f, 2
+		)},
+
 		{"flashlight", new Tool("Flashlight", "flashlight", 0.1f, false)},
 		{"hammer", new Tool("Hammer", "hammer", 0.3f, false)},
 
@@ -377,5 +384,8 @@ public enum Perk {
 public enum Difficulty {
 	ReallyEasy,
 	Easy,
-	Normal
+	Normal,
+	Hard,
+	Insanity,
+	AcidTrip
 }
