@@ -4,6 +4,7 @@ using UnityEngine;
 
 using UnityEngine.Rendering;
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 using Mirror;
 
@@ -23,6 +24,7 @@ public class PlayerCore : NetworkBehaviour
 	int health = 100;
 
 	float shootWait;
+	float useWait;
 
 	Transform canvas;
 	Transform buildPreview;
@@ -43,6 +45,8 @@ public class PlayerCore : NetworkBehaviour
 	public Material buildValidMat;
 	public Material buildInvalidMat;
 
+	[HideInInspector] public bool isInChat;
+
 	[Command]
 	public void CmdSetName(string n) {
 		playerName = n;
@@ -55,16 +59,16 @@ public class PlayerCore : NetworkBehaviour
 	}
 
 	void Start() {
+		canvas = GameObject.Find("/Canvas").transform;
+		animator = GetComponent<Animator>();
+		inventory = GetComponent<PlayerInventory>();
+
 		if (isLocalPlayer) {
 			buildPreview = GameObject.Find("/BuildPreview").transform;
 			buildPreview.gameObject.SetActive(false);
 
 			Cursor.lockState = CursorLockMode.Locked;
 			bloodEffect = GameObject.Find("BloodVolume").GetComponent<Volume>();
-
-			canvas = GameObject.Find("/Canvas").transform;
-			animator = GetComponent<Animator>();
-			inventory = GetComponent<PlayerInventory>();
 
 			Application.targetFrameRate = 70;
 
@@ -204,7 +208,28 @@ public class PlayerCore : NetworkBehaviour
 			buildPreview.gameObject.SetActive(inventory.selectedItem.id != "" && inventory.selectedItem.GetData() is BuildingData);
 			buildPreview.GetComponent<MeshRenderer>().material = buildValid ? buildValidMat : buildInvalidMat;
 
-			if (inventory.selectedItem.id != "" && !inventory.crafting) {
+			if (PlayerControls.GetInput("enterchat")) {
+				print("a");
+				canvas.Find("ChatBar").GetComponent<InputField>().ActivateInputField();
+			}
+				
+			if (EventSystem.current.currentSelectedGameObject == canvas.Find("ChatBar").gameObject) {
+				if (PlayerControls.GetInput("use")) {
+					print("b");
+					canvas.Find("ChatBar").GetComponent<InputField>().DeactivateInputField();
+				}
+
+				if (PlayerControls.GetInput("sendchat")) {
+					print("c");
+					CmdSendMessage(canvas.Find("ChatBar").GetComponent<InputField>().text);
+
+					canvas.Find("ChatBar").GetComponent<InputField>().text = "";
+					canvas.Find("ChatBar").GetComponent<InputField>().DeactivateInputField();
+					EventSystem.current.SetSelectedGameObject(null);
+				}
+
+				useWait = Time.time + 0.1f;
+			} else if (inventory.selectedItem.id != "" && !inventory.crafting && useWait < Time.time) {
 				if (PlayerControls.GetInput("drop")) {
 					inventory.selectedItem.amount -= 1;
 					
@@ -297,7 +322,7 @@ public class PlayerCore : NetworkBehaviour
 					animator.SetBool("Aiming", false);
 					if (!canvas.Find("Dot").gameObject.activeInHierarchy) canvas.Find("Dot").gameObject.SetActive(true);
 				}
-			} else {
+			} else if (useWait < Time.time) {
 				if (PlayerControls.GetInput("use")) StartCoroutine(Punch());
 
 				animator.SetBool("Aiming", false);
@@ -602,6 +627,30 @@ public class PlayerCore : NetworkBehaviour
 	private void CmdLoadRandomMap() {
 		score += 200;
 		GameObject.Find("/Map").GetComponent<MapLoader>().LoadRandomMap();
+	}
+
+	[Command]
+	private void CmdSendMessage(string msg) {
+		RpcSendMessage(playerName + ": " + msg);
+	}
+
+	[ClientRpc]
+	private void RpcSendMessage(string msg) {
+		Transform chatParent = canvas.Find("Chat");
+		GameObject chatMessage = Instantiate(Resources.Load("ChatMessage") as GameObject, chatParent);
+
+		chatMessage.GetComponent<Text>().text = msg;
+
+		Destroy(chatMessage, 60);
+	}
+
+	[TargetRpc]
+	public void RpcResurrect() {
+		canvas.Find("Dead").gameObject.SetActive(false);
+
+		GetComponent<Rigidbody>().isKinematic = false;
+
+		CmdSetDead(false);
 	}
 
 	public void PlayLocalSound(string n) {

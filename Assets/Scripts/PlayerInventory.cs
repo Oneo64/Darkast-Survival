@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 using UnityEngine.UI;
+using UnityEngine.EventSystems;
 
 using Mirror;
 
@@ -35,13 +36,15 @@ public class PlayerInventory : NetworkBehaviour
 
 	PlayerCore core;
 
+	Transform canvas;
 	Transform hotbar;
 
 	float cycleWait;
 
 	void Start() {
 		core = GetComponent<PlayerCore>();
-		hotbar = GameObject.Find("/Canvas/Hotbar").transform;
+		canvas = GameObject.Find("/Canvas").transform;
+		hotbar = canvas.Find("Hotbar");
 
 		//AddItem("ak_47");
 		//AddItem("assault_rifle_magazine", 10);
@@ -50,7 +53,7 @@ public class PlayerInventory : NetworkBehaviour
 	}
 
 	void Update() {
-		if (isLocalPlayer) {
+		if (isLocalPlayer && EventSystem.current.currentSelectedGameObject != canvas.Find("ChatBar").gameObject) {
 			/*
 			if (Input.GetAxis("Mouse ScrollWheel") > 0) {
 				if (crafting) {

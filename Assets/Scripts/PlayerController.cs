@@ -2,6 +2,9 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
+using UnityEngine.UI;
+using UnityEngine.EventSystems;
+
 using Mirror;
 
 public class PlayerController : NetworkBehaviour
@@ -20,6 +23,8 @@ public class PlayerController : NetworkBehaviour
 	PlayerInventory inventory;
 	Rigidbody controller;
 
+	Transform canvas;
+
 	Vector2 rotation;
 	Vector2 recoil;
 
@@ -35,6 +40,7 @@ public class PlayerController : NetworkBehaviour
 		core = GetComponent<PlayerCore>();
 		inventory = GetComponent<PlayerInventory>();
 		controller = GetComponent<Rigidbody>();
+		canvas = GameObject.Find("/Canvas").transform;
 
 		if (!isLocalPlayer) {
 			core.camera.gameObject.SetActive(false);
@@ -46,7 +52,7 @@ public class PlayerController : NetworkBehaviour
 
 	void Update() {
 		if (isLocalPlayer) {
-			CheckMovement(!core.isDead);
+			CheckMovement(!core.isDead && EventSystem.current.currentSelectedGameObject != canvas.Find("ChatBar").gameObject);
 
 			rotation += new Vector2(-PlayerControls.GetInputAxis("look_y"), PlayerControls.GetInputAxis("look_x"));
 

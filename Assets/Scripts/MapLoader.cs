@@ -61,10 +61,10 @@ public class MapLoader : MonoBehaviour
 		NetworkStartPosition[] spawns = Object.FindObjectsOfType<NetworkStartPosition>();
 
 		foreach (PlayerCore player in Object.FindObjectsOfType<PlayerCore>()) {
-			if (!player.isDead) {
-				player.RpcGiveInvincibility(5);
-				player.RpcMoveTo(spawns[Random.Range(0, spawns.Length)].transform.position);
-			}
+			if (player.isDead) player.RpcResurrect();
+			
+			player.RpcGiveInvincibility(5);
+			player.RpcMoveTo(spawns[Random.Range(0, spawns.Length)].transform.position);
 		}
 
 		NetworkIdentity[] identities = map.GetComponentsInChildren<NetworkIdentity>();
@@ -80,10 +80,22 @@ public class MapLoader : MonoBehaviour
 		yield return new WaitForSeconds(1);
 
 		GameObject[] doorSpawns = GameObject.FindGameObjectsWithTag("DoorCanSpawn");
+		Transform levelDoor = GameObject.Find("/MysteriousDoor").transform;
+		int retries = 10;
 
 		if (doorSpawns.Length > 0) {
-			GameObject.Find("/MysteriousDoor").transform.position = doorSpawns[Random.Range(0, doorSpawns.Length)].transform.position + new Vector3(Random.Range(-4f, 4f), 0, Random.Range(-4f, 4f));
-			GameObject.Find("/MysteriousDoor").transform.rotation = Quaternion.Euler(0, Random.Range(0, 360), 0);
+			while (retries == 10 || Physics.Linecast(levelDoor.position + (Vector3.up * 1.5f), levelDoor.position + Vector3.up, LayerMask.GetMask("Default"))) {
+				levelDoor.position = doorSpawns[Random.Range(0, doorSpawns.Length)].transform.position + new Vector3(Random.Range(-4f, 4f), 0, Random.Range(-4f, 4f));
+				levelDoor.rotation = Quaternion.Euler(0, Random.Range(0, 360), 0);
+
+				retries -= 1;
+
+				if (retries <= 0) break;
+			}
+
+			if (Physics.Raycast(levelDoor.position + (Vector3.up * 2), Vector3.down, out RaycastHit hit, 10, LayerMask.GetMask("Default"))) {
+				levelDoor.position = new Vector3(levelDoor.position.x, hit.point.y, levelDoor.position.z);
+			}
 		}
 
 		yield return new WaitForSeconds(1);

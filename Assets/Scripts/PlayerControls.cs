@@ -62,6 +62,14 @@ public class PlayerControls
 
 			case "reload":
 				if (isKeyboardInput) return Input.GetKeyDown(KeyCode.R); else return Gamepad.current.rightShoulder.isPressed && Gamepad.current.rightShoulder.wasPressedThisFrame;
+
+			case "enterchat":
+				if (isKeyboardInput) return Input.GetKeyDown(KeyCode.T);
+				break;
+
+			case "sendchat":
+				if (isKeyboardInput) return Input.GetKeyDown(KeyCode.Return);
+				break;
 		}
 
 		return false;
